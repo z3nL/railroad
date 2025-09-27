@@ -1,0 +1,109 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Updated background to light blue */
+  --background: #e6f3ff;
+  /* Updated foreground to slightly lighter blue for better contrast on light blue background */
+  --foreground: #1a4b8c;
+  --card: #ffffff;
+  /* Updated card foreground to slightly lighter blue */
+  --card-foreground: #1a4b8c;
+  --popover: #ffffff;
+  /* Updated popover foreground to slightly lighter blue */
+  --popover-foreground: #1a4b8c;
+  /* Updated to use new color palette with #000B58 as primary */
+  --primary: #000b58;
+  --primary-foreground: #ffffff;
+  /* Secondary using #003161 */
+  --secondary: #003161;
+  --secondary-foreground: #ffffff;
+  --muted: #006a67;
+  --muted-foreground: #ffffff;
+  /* Accent using #006A67 */
+  --accent: #006a67;
+  --accent-foreground: #ffffff;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: #003161;
+  --input: #ffffff;
+  --ring: #000b58;
+  --chart-1: #000b58;
+  --chart-2: #003161;
+  --chart-3: #006a67;
+  --chart-4: #fdeb9e;
+  --chart-5: #000b58;
+  --radius: 0.625rem;
+  --sidebar: #ffffff;
+  /* Updated sidebar foreground to slightly lighter blue */
+  --sidebar-foreground: #1a4b8c;
+  --sidebar-primary: #000b58;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #003161;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #003161;
+  --sidebar-ring: #000b58;
+}
+
+@theme inline {
+  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
+
+  /* Updated color system to use new palette */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Updated floating elements to use new color palette */
+.floating-elements {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+/* Remove old static animation styles - now handled by JavaScript */
