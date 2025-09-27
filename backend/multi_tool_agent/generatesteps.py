@@ -34,5 +34,5 @@ def generate_steps(task: str, values: str, student: str) -> list[str]:
 
 
 if __name__ == "__main__":
-    steps = generate_steps("algebra", "basic algebraic operations", "high school student")
+    steps = generate_steps("soccer", "how to play soccer", "high school soccer")
     import json; print(json.dumps(steps))
