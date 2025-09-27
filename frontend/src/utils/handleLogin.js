@@ -1,27 +1,19 @@
 const handleLogin = (e, navigate) => {
     e.preventDefault();
-    const role = e.target[0].checked ? "teacher" : "student";
-    const username = e.target[2].value;
-    const password = e.target[3].value;
+    const username = e.target[0].value;
+    const password = e.target[1].value;
 
-    // TODO Unlock student login when feature is complete
-    if (role !== "teacher") {
-        navigate('/gk');
-        return;
+    const roles = {
+        1: "student",
+        2: "teacher"
+    };
+
+    const roleNav = {
+        "student": "/gk",
+        "teacher": "/teacher-dashboard"
     }
 
-    if (username === "teacher@school.edu" && password === "teacher") {
-        navigate('/teacher-dashboard');
-    }
-    else {
-        alert("Invalid credentials. Please try again.");
-    }
-
-    return;
-
-    // TODO Legitimate sign-in sequence if desired
-
-    fetch(`http://localhost:3000/${role}/login`, {
+    fetch(`http://localhost:5000/login`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -31,7 +23,7 @@ const handleLogin = (e, navigate) => {
         .then((res) => res.json())
         .then((data) => {
             if (data.success) {
-                alert(`Logged in as ${role}: ${username}`);
+                navigate(roleNav[roles[data.role]]);
             } else {
                 alert(`Login failed: ${data.message}`);
             }

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import arrowRight from './assets/arrow-right.svg';
 import './TeacherDashboard.css';
 import './App.css';
@@ -8,6 +8,8 @@ const TeacherDashboard = () => {
     const navigate = useNavigate();
     const [createButtonText, setCreateButtonText] = useState('Create Lesson');
     const [isCreatingLesson, setIsCreatingLesson] = useState(false);
+    const [isWaitingOnLessonCreation, setIsWaitingOnLessonCreation] = useState(false);
+    const [pendingLessonName, setPendingLessonName] = useState("default");
 
     // Mock lessons
     const [lessons, setLessons] = useState([
@@ -28,22 +30,59 @@ const TeacherDashboard = () => {
         if (isCreatingLesson) {
             setCreateButtonText('Create Lesson');
         } else {
-            setCreateButtonText('Cancel');
+            setCreateButtonText('Cancel Creation');
         }
         setIsCreatingLesson(!isCreatingLesson);
     };
 
     const handleCreateLessonSubmissionButton = (e) => {
         e.preventDefault();
-        title = e.target[0].value;
-        topic = e.target[1].value;
-        level = e.target[2].value;
-        description = e.target[3].value;
+        const title = e.target[0].value;
+        const topic = e.target[1].value;
+        const level = e.target[2].value;
+        const description = e.target[3].value;
+
+        fetch(`http://localhost:5000/createLesson`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ title, topic, level, description }),
+        });
+        /*
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.success) {
+                    alert("Lesson created successfully!");
+                } else {
+                    alert(`Failed to create lesson: ${data.message}`);
+                }
+            })
+            .catch((err) => {
+                console.error("Error during lesson creation:", err);
+                alert("An error occurred during lesson creation. Please try again.");
+            });
+        */
+        
+        handleCreateLessonModalButton();
+        setPendingLessonName(title);
+        setIsWaitingOnLessonCreation(true);
     }
 
     const handleLessonClick = (lessonId) => {
         alert(`GK: Clicked ${lessonId}, not implemented yet`);
     };
+
+    useEffect(() => {
+        if (isWaitingOnLessonCreation) {
+            const timer = setTimeout(() => {
+                setIsWaitingOnLessonCreation(false);
+                // TODO actually wait on lesson creation
+                setLessons([...lessons, { id: lessons.length + 1, title: `New Lesson ${lessons.length + 1}: ${pendingLessonName}` }]);
+            }, 3000); // Simulate a 3-second wait time for lesson creation
+            return () => clearTimeout(timer);
+        }
+    }, [isWaitingOnLessonCreation, lessons]);
 
     return (
         <div className="dashboardContainer">
@@ -54,6 +93,8 @@ const TeacherDashboard = () => {
                 </button>
             </div>
 
+        {!isCreatingLesson && !isWaitingOnLessonCreation && (
+        <>
             <h2>Your Students' Lessons</h2>
             <div className="lessonList">
                 {lessons.map((lesson) => (
@@ -67,13 +108,15 @@ const TeacherDashboard = () => {
                     </div>
                 ))}
             </div>
+        </>
+        )}
 
 
             <button className="createButton" onClick={handleCreateLessonModalButton}>
                 {createButtonText}
             </button>
 
-            {isCreatingLesson && (
+            {isCreatingLesson && !isWaitingOnLessonCreation && (
                 <form className="createLessonForm" onSubmit={handleCreateLessonSubmissionButton}>
                     <input className='inputField' type="text" placeholder="Lesson Title" required/>
                     <input className='inputField' type="text" placeholder="Lesson Topic" required/>
@@ -85,6 +128,13 @@ const TeacherDashboard = () => {
                         Let's Teach!
                     </button>
                 </form>
+            )}
+
+            {isWaitingOnLessonCreation && (
+                <div className="waitingContainer">
+                    <h2>Generating {pendingLessonName}...</h2>
+                    <p>awesome train gif</p>
+                </div>
             )}
         </div>
     );

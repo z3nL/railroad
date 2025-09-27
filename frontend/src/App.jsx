@@ -17,8 +17,8 @@ function App() {
       <form className="loginContainer" onSubmit={(e) => handleLogin(e, navigate)}>
         <h3>Welcome Back!</h3>
 
-        
         {/* Role selector */}
+        {/* 
         <div className="roleSelector">
           <label>
             <input
@@ -39,6 +39,7 @@ function App() {
             Student
           </label>
         </div>
+        */}
 
         <input className="inputField" type="text" placeholder="Username" required />
         <br />

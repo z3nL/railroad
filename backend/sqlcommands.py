@@ -1,14 +1,21 @@
-# db_api.py
-# NOTE: these helpers assume plaintext passwords (test-only) and no RLS.
+#  assume plaintext passwords (test-only) and no RLS.
 # If you enable RLS later, use a service role key here (server-only).
 
 import os
 from typing import Optional, TypedDict, Tuple, Dict, Any, List
 from supabase import create_client, Client
+from dotenv import load_dotenv
+
+# ---------- Load .env ----------
+load_dotenv(dotenv_path=".env")  # loads variables from .env into os.environ
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_ROLE = os.getenv("SUPABASE_SERVICE_ROLE")
+
+if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE:
+    raise RuntimeError("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE in .env")
 
 # ---------- Supabase client ----------
-SUPABASE_URL = os.environ["SUPABASE_URL"]
-SUPABASE_SERVICE_ROLE = os.environ["SUPABASE_SERVICE_ROLE"]  # server-only secret
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE)
 
 # ---------- Types ----------
@@ -19,21 +26,20 @@ class AppUser(TypedDict):
     role: int
 
 # ---------- Users ----------
-def verify_user(email: str, password: str, role: int) -> Optional[AppUser]:
+def verify_user(email: str, password: str) -> Optional[AppUser]:
     """Lookup a user by email, plaintext password (test), and role."""
     res = (
         supabase.table("users")
         .select("id,email,name,role")
-        .match({"email": email, "password": password, "role": role})
+        .match({"email": email, "password": password})
         .limit(1)
         .execute()
     )
     rows = res.data or []
-    return rows[0] if rows else None
+    return rows[0] if rows else None  # type: ignore
 
 def create_account(email: str, password: str, name: str, role: int) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
     """Insert a new user. Returns (user_dict, error)."""
-    # Optional: uniqueness check (also add UNIQUE(email) in SQL)
     exists = supabase.table("users").select("id").eq("email", email).limit(1).execute()
     if exists.data:
         return None, "Email already registered"
@@ -50,9 +56,6 @@ def create_account(email: str, password: str, name: str, role: int) -> Tuple[Opt
 
 # ---------- Lessons ----------
 def get_lessons(user_id: Optional[str] = None) -> List[Dict[str, Any]]:
-    """
-    Fetch lessons. If you later add owner scoping, filter with .eq('owner_id', user_id).
-    """
     q = supabase.table("lessons").select(
         "lesson_id,created_at,lesson_name,lesson_descriptions,lesson_level"
     )
@@ -60,7 +63,6 @@ def get_lessons(user_id: Optional[str] = None) -> List[Dict[str, Any]]:
     return q.order("created_at", desc=True).execute().data or []
 
 def get_steps(lesson_id: int) -> List[Dict[str, Any]]:
-    """Fetch steps for a lesson, ordered by step_number ASC."""
     res = (
         supabase.table("steps")
         .select("lessons_id,step_number,step_image,step_description")
@@ -75,10 +77,6 @@ def add_lesson(
     lesson_description: str,
     lesson_level: str,
 ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
-    """
-    Create ONLY the lesson row. Steps are added later by add_steps/add_step.
-    Returns (lesson_dict, error).
-    """
     insert_lesson = (
         supabase.table("lessons")
         .insert({
@@ -93,16 +91,11 @@ def add_lesson(
         return None, "Failed to create lesson"
     return insert_lesson.data[0], None
 
-# ---------- Steps (added after images are generated) ----------
+# ---------- Steps ----------
 def add_steps(
     lesson_id: int,
     steps: List[Dict[str, Any]],
 ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
-    """
-    Bulk-insert steps for an existing lesson.
-    steps: [{ step_number:int, step_description:str, step_image?:str }]
-    Returns (inserted_steps_sorted, error).
-    """
     if not steps:
         return [], None
 
@@ -132,10 +125,6 @@ def add_step(
     step_description: str,
     step_image: Optional[str] = None,
 ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
-    """
-    Insert a single step (useful as each image finishes).
-    Returns (inserted_step, error).
-    """
     res = (
         supabase.table("steps")
         .insert({
