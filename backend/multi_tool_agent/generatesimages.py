@@ -15,8 +15,8 @@ client = OpenAI(api_key=API_KEY)
 
 def generate_images(prompts, n_images=1, size="1024x1024"):
     """
-    Generate images for a list of prompts.
-    Returns a list of URLs to the generated images.
+    Generate an image for the given prompt.
+    Return a single URL to the generated images.
     """
     generated_urls = []
     for i, prompt in enumerate(prompts):
