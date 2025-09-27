@@ -15,12 +15,12 @@ client = OpenAI(api_key=API_KEY)
 
 def generate_images(prompts, n_images=1, size="1024x1024"):
     """
-    Generate an image for the given prompt.
+    Generate an image for the given step.
     Return a single URL to the generated images.
     """
     generated_urls = []
     for i, prompt in enumerate(prompts):
-        print(f"Generating image {i+1}/{len(prompts)} for prompt: {prompt}")
+        print(f"Generating image {i+1}/{len(prompts)} for step: {prompt}")
         response = client.images.generate(
             model="dall-e-3",  # or "dall-e-3" if your account has access
             prompt=prompt,
