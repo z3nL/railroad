@@ -11,12 +11,12 @@ const handleCreateLessonSubmissionButton = (e, handleCreateLessonModalButton, se
             "Content-Type": "application/json",
         },
         body: JSON.stringify({ title, topic, level, description }),
-    });
-    /*
+    })
         .then((res) => res.json())
         .then((data) => {
             if (data.success) {
                 alert("Lesson created successfully!");
+                console.log(data.lesson_id);
             } else {
                 alert(`Failed to create lesson: ${data.message}`);
             }
@@ -25,7 +25,6 @@ const handleCreateLessonSubmissionButton = (e, handleCreateLessonModalButton, se
             console.error("Error during lesson creation:", err);
             alert("An error occurred during lesson creation. Please try again.");
         });
-    */
     
     handleCreateLessonModalButton();
     setPendingLessonName(title);
