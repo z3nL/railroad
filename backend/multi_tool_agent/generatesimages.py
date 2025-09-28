@@ -3,7 +3,9 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import base64
-from typing import List
+from typing import List, Optional
+import time
+import hashlib
 
 # Load environment variables from .env
 load_dotenv()
@@ -17,7 +19,7 @@ client = OpenAI(api_key=API_KEY)
 
 def generate_images(
     prompts: List[str], # Required: This is the only parameter the LLM agent will supply
-    n_images: int       # Required: The LLM agent MUST supply this value (e.g., 3)
+    n_images: int       # Required: The LLM agent MUST supply this value (e.g., 1)
 ) -> List[str]:
     """
     Generate images using gpt-image-1, save locally, and return file paths.
@@ -34,30 +36,71 @@ def generate_images(
     os.makedirs(SAVE_DIR, exist_ok=True)
     generated_files = []
 
-    # The ParallelAgent passes ONE step (prompt) to the agent, which then 
+    # Create a unique identifier for this batch to avoid overwrites
+    timestamp = int(time.time() * 1000)  # milliseconds
+    
+    # The ParallelAgent passes ONE step (prompt) to each agent, which then 
     # calls this function with prompts=[single_step] and n_images=X.
-    for i, prompt in enumerate(prompts):
-        print(f"Generating {n_images} image(s) for step: {prompt}")
+    for i, original_prompt in enumerate(prompts):
+        print(f"Generating {n_images} image(s) for step: {original_prompt[:100]}...")
+        
+        # Extract step number using regex - more robust approach
+        import re
+        
+        # Try multiple regex patterns to catch different formats
+        patterns = [
+            r'Step (\d+)\.',           # "Step 1."
+            r'Step (\d+):',            # "Step 1:"
+            r'Step (\d+)\s',           # "Step 1 "
+            r'(\d+)\.',                # Just "1." at the start
+        ]
+        
+        extracted_step_num = None
+        for pattern in patterns:
+            step_match = re.search(pattern, original_prompt)
+            if step_match:
+                extracted_step_num = int(step_match.group(1))
+                break
+        
+        # Fallback if no step number found
+        if extracted_step_num is None:
+            extracted_step_num = i + 1
+        
+        print(f"Detected step number: {extracted_step_num}")
+        
+        # Enhance the prompt to REQUIRE step number text in the image
+        enhanced_prompt = (
+            f"IMPORTANT: You MUST include the exact text 'Step {extracted_step_num}' prominently at the top of the image in large, bold, readable text. "
+            f"Create a clear educational illustration that shows 'Step {extracted_step_num}' as a header. "
+            f"Below that header, create a visual representation of: {original_prompt}. "
+            f"The image should be educational, clean, and suitable for a high school algebra student. "
+            f"Make sure 'Step {extracted_step_num}' is the most prominent text element in the image, clearly visible and easy to read. "
+            f"Use a clean, educational design with good contrast so the step number stands out."
+        )
+
+        print(f"Enhanced prompt: {enhanced_prompt[:150]}...")
 
         # Call the OpenAI API once, asking for 'n_images' at the same time
         response = client.images.generate(
             model="gpt-image-1",
-            prompt=prompt,
+            prompt=enhanced_prompt,
             size=SIZE,
             n=n_images # Use the value supplied by the agent
         )
 
         for idx, img in enumerate(response.data):
-            # Decode and save (no inner loop needed, as n=n_images handles it)
+            # Decode and save with regex-based naming convention
             if img.b64_json:
                 img_bytes = base64.b64decode(img.b64_json)
-                # Use a combined index for uniqueness: {prompt_index}_{n_index}
-                file_path = os.path.join(SAVE_DIR, f"image_{i+1}_{idx+1}.png")
+                
+                # Create clean filename using regex-extracted step number
+                # Format: step_##_timestamp_imagenum.png (zero-padded for sorting)
+                file_path = os.path.join(SAVE_DIR, f"step_{extracted_step_num:02d}_{timestamp}_{idx+1}.png")
+                
                 with open(file_path, "wb") as f:
                     f.write(img_bytes)
                 generated_files.append(file_path)
-            # We don't expect URLs if response_format="b64_json" is used, 
-            # so the URL fallback is usually not necessary.
+                print(f"✅ Saved image: {file_path}")
 
     return generated_files
 

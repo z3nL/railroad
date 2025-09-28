@@ -1,4 +1,3 @@
-# agent.py
 import asyncio
 from google.adk.agents import Agent, SequentialAgent, ParallelAgent, LlmAgent
 from google.adk.runners import Runner
@@ -8,26 +7,6 @@ import json
 # Your tools (plain Python functions are auto-wrapped as FunctionTools by ADK)
 from generatesteps import generate_steps
 from generatesimages import generate_images
-
-"""
-def make_quiz_question(topic: str) -> dict:
-   # Generates a quiz question for the given topic.
-    return {
-        "status": "success",
-        "report": f"Give the student a challenging quiz question about: {topic}."
-    }
-
-def summarize_for_grade_level(topic: str, grade: str = "high school") -> dict:
-    #Provides an instruction for simplifying content to a certain grade level.
-    return {
-        "status": "success",
-        "report": f"Explain {topic} in a way that a {grade} student would understand."
-    }"""
-
-
-
-
-
 
 steps_agent = Agent(
     name="teaching_guide_agent",
@@ -42,54 +21,60 @@ steps_agent = Agent(
     output_key="steps"
 )
 
-# agents.py (Only the single_image_generator part needs this update)
+# Create a custom agent that processes individual steps
+class StepProcessorAgent(Agent):
+    def __init__(self, step_index: int):
+        super().__init__(
+            name=f"step_processor_{step_index}",
+            model="gemini-2.5-flash",
+            description=f"Processes step {step_index} and generates an image.",
+            instruction=(
+                f"You will receive an array of steps. Extract step {step_index} (0-indexed) from the array. "
+                f"Then call `generate_images` with that single step as the only item in prompts and n_images=1. "
+                f"Return ONLY the exact list string returned by the tool. "
+                f"DO NOT add any prefix, suffix, conversational text, or explanation."
+            ),
+            tools=[generate_images]
+        )
+        self.step_index = step_index
 
+# Alternative approach: Create a manual distributor
+def create_step_image_generator(step_number: int) -> Agent:
+    return Agent(
+        name=f"step_image_generator_{step_number}",
+        model="gemini-2.5-flash",
+        description=f"Generates image for step {step_number}",
+        instruction=(
+            f"You will receive context from a previous agent that contains steps. "
+            f"Find the step content that logically corresponds to step {step_number}. "
+            f"This might be explicitly labeled 'Step {step_number}.' or it might be unlabeled content that represents step {step_number}. "
+            f"Extract that step's content and create an enhanced prompt that FORCES the image to show 'Step {step_number}' as the header. "
+            f"Call `generate_images` with a specially crafted prompt that includes: "
+            f"'Create an educational image with Step {step_number} as the prominent header, showing: [step content]' "
+            f"The key requirement is that the image MUST display 'Step {step_number}' regardless of what step number (if any) appears in the original content. "
+            f"Return ONLY the exact JSON array returned by the tool. "
+            f"DO NOT add explanations or extra text, just the JSON array of file paths."
+        ),
+        tools=[generate_images],
+    )
 
-from google.adk.agents import Agent
-# Assuming 'generate_images' is imported from your tools module
-
-single_image_generator = Agent(
-    name="single_image_generator",
-    model="gemini-2.5-flash", 
-    description="Generates ONE image path based on a single step.",
-    instruction=(
-        "You receive a single step from a sequence. You MUST call the tool "
-        "`generate_images` with the step as the only item in `prompts` and `n_images=1`. "
-        
-        # This is the critical part to fix the empty content issue:
-        # Changed the example to use strict double quotes for JSON compliance.
-        "Your final output MUST be the exact list string returned by the tool, "
-        "for example: [\"generated_images\\image_1_1.png\"]. " 
-        "DO NOT add any prefix, suffix, conversational text, or explanation."
-    ),
-    tools=[generate_images],
-)
-
-
-
-
+# Create agents for the first 6 steps (adjust number as needed)
+step_image_generators = [create_step_image_generator(i) for i in range(1, 7)]
 
 parallel_image_agent = ParallelAgent(
-    name = "ParallelImageGenerator",
-    sub_agents= [single_image_generator],
-    description= "Generate images in parallel for a given set of steps"
+    name="ParallelImageGenerator",
+    sub_agents=step_image_generators,
+    description="Generate images in parallel for individual steps from the array"
 )
-
-
 
 sequential_pipeline = SequentialAgent(
     name="PipelineAgent",
     sub_agents=[steps_agent, parallel_image_agent],
-    description="Runs steps agent, then generates images in parallel."
+    description="Runs steps agent, then generates images in parallel for each step."
 )
 
-dict = {
-    "task": "algebra",
-    "values": "basic algebraic operations",
-    "student": "high school student"
-}
-
 root_agent = sequential_pipeline
+
 async def main():
     app_name = "PipelineApp"
     user_id = "blake"
@@ -101,7 +86,6 @@ async def main():
         user_id=user_id
     )
 
-    # Assuming 'root_agent' is defined globally or imported
     runner = Runner(app_name=app_name, agent=root_agent, session_service=session_service)
 
     # 2. Prepare Input
@@ -110,7 +94,6 @@ async def main():
         "values": "basic algebraic operations",
         "student": "high school student"
     }
-    # The ADK expects a message object
     user_msg = Content(parts=[Part(text=str(payload))])
 
     # --- Result Collection Variables ---
@@ -123,58 +106,104 @@ async def main():
         session_id=session.id,
         new_message=user_msg
     ):
-        # Optional: uncomment to print all events for detailed debugging
-        # print("Event:", event)
+        # Debug: Print all events to see what's happening
+        print(f"Event: {event.author} | Branch: {event.branch} | Finish: {getattr(event, 'finish_reason', 'N/A')}")
+        
+        # Safely extract content
+        result_content = None
+        if hasattr(event, 'content') and event.content:
+            if hasattr(event.content, 'parts') and event.content.parts:
+                # Look for text in the parts
+                for part in event.content.parts:
+                    if hasattr(part, 'text') and part.text:
+                        result_content = part.text
+                        print(f"Content: {result_content[:100]}...")
+                        break
+            elif hasattr(event.content, 'text') and event.content.text:
+                # Direct text access
+                result_content = event.content.text
+                print(f"Content (direct): {result_content[:100]}...")
 
-        # Check for the successful final output of a single image generator branch
-        # This event contains the generated image path list (e.g., '["image_1_1.png"]')
+        # Check for successful final output from step image generators
+        # Look for function response events instead of direct agent responses
         if (
             event.branch and 
-            event.author == 'single_image_generator' and 
-            event.finish_reason == 'STOP'
+            event.author and event.author.startswith('step_image_generator_') and 
+            getattr(event, 'finish_reason', None) == 'STOP'
         ):
-            # The path is in the first part of the content
-            result_content = event.content.parts[0].text
+            # Check if this is a function call response (the actual image generation result)
+            if hasattr(event, 'content') and event.content and hasattr(event.content, 'parts'):
+                for part in event.content.parts:
+                    # Look for function response parts that contain the generated image paths
+                    if hasattr(part, 'function_response') and part.function_response:
+                        try:
+                            # Extract the result from the function response
+                            if hasattr(part.function_response, 'response'):
+                                result_data = part.function_response.response
+                                if isinstance(result_data, list):
+                                    generated_image_paths.extend(result_data)
+                                    print(f"✅ Collected image paths from {event.author}: {result_data}")
+                                elif isinstance(result_data, str):
+                                    # Sometimes the result might be a JSON string
+                                    try:
+                                        paths = json.loads(result_data)
+                                        generated_image_paths.extend(paths)
+                                        print(f"✅ Collected image paths from {event.author}: {paths}")
+                                    except:
+                                        print(f"⚠️  Couldn't parse result from {event.author}: {result_data}")
+                        except Exception as e:
+                            print(f"❌ Error extracting function response from {event.author}: {e}")
             
+            # If no function response found, this might be the function call itself
             if result_content:
                 try:
-                    # Parse the string result into a Python list
                     paths = json.loads(result_content)
                     generated_image_paths.extend(paths)
-                    
+                    print(f"✅ Collected image paths from {event.author}: {paths}")
                 except json.JSONDecodeError as e:
-                    # Catch malformed JSON output from the LLM
-                    print(f"Error parsing image path JSON for branch {event.branch}: {e}. Raw content: {result_content}")
+                    print(f"❌ Error parsing JSON from {event.author}: {e}")
+                    print(f"Raw content: {result_content}")
                 except Exception as e:
-                    # Catch general errors, like the JSON object being NoneType when accessed
-                    print(f"Unexpected error processing image path for branch {event.branch}: {e}")
+                    print(f"❌ Unexpected error from {event.author}: {e}")
             else:
-                print(f"Warning: single_image_generator event for branch {event.branch} returned empty content.")
+                print(f"⚠️  Function call detected from {event.author}, waiting for function response...")
 
     # 4. Retrieve Final State
-    # The loop completes only when all parallel tasks (Steps 1-4) are finished.
     state = await session_service.get_session(
         app_name=app_name,
         user_id=user_id,
         session_id=session.id
     )
     
-    # Retrieve the steps stored by the teaching_guide_agent
     saved_steps_str = state.state.get("steps")
 
     # 5. Print Final Results
-    print("\n" + "="*25)
+    print("\n" + "="*50)
     print("--- Final Results ---")
-    print("="*25)
-    # The key is simply 'steps', not len(steps)
-    print(f"Total Steps Retrieved: {len(json.loads(saved_steps_str)) if saved_steps_str else 0}")
-    print(f"Steps (Raw State Value): {saved_steps_str}")
-    print("\n--- Generated Images ---")
+    print("="*50)
+    
+    if saved_steps_str:
+        steps_array = json.loads(saved_steps_str)
+        print(f"Total Steps Generated: {len(steps_array)}")
+        for i, step in enumerate(steps_array, 1):
+            print(f"  Step {i}: {step}")
+    else:
+        print("No steps found in state")
+    
+    print(f"\n--- Generated Images ---")
     print(f"Total Images Collected: {len(generated_image_paths)}")
-    print("Generated Images (Collected from Events):", generated_image_paths)
+    for i, path in enumerate(generated_image_paths, 1):
+        print(f"  Image {i}: {path}")
+
+    # Check if we have the right number of images
+    if saved_steps_str:
+        expected_images = len(json.loads(saved_steps_str))
+        actual_images = len(generated_image_paths)
+        if actual_images == expected_images:
+            print(f"✅ SUCCESS: Generated {actual_images} images for {expected_images} steps")
+        else:
+            print(f"⚠️  MISMATCH: Expected {expected_images} images, got {actual_images}")
 
 
 if __name__ == "__main__":
-    # Ensure you have 'root_agent' and the service classes imported before running
-    # Example: root_agent = SequentialAgent(...)
     asyncio.run(main())
