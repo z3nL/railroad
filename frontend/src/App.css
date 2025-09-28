@@ -1,22 +1,386 @@
+/* Reset and base styles - Full screen setup */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  width: 100vw;
+  min-height: 100vh;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+/* Main container - Full screen for monitors */
+.app-container {
+  min-height: 80vh;
+  width: 94.25vw;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 2rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-y: auto;
+}
+
+/* Background elements */
+.background-elements {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-cloud {
+  position: absolute;
+  animation: float 6s ease-in-out infinite;
+}
+
+.floating-cloud:nth-child(1) {
+  top: 10%;
+  left: 10%;
+}
+
+.floating-cloud:nth-child(2) {
+  top: 20%;
+  right: 15%;
+}
+
+.floating-cloud:nth-child(3) {
+  bottom: 20%;
+  left: 5%;
+}
+
+.floating-cloud-small {
+  transform: scale(0.6);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+.gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.6;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.orb-1 {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, #ff6b6b, transparent);
+  top: 10%;
+  right: 10%;
+  animation-delay: 0s;
+}
+
+.orb-2 {
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, #4ecdc4, transparent);
+  bottom: 20%;
+  right: 20%;
+  animation-delay: 2s;
+}
+
+.orb-3 {
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, #ffe66d, transparent);
+  top: 50%;
+  left: 5%;
+  animation-delay: 1s;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+/* Main content area - Better sizing for monitors with proper height */
+.main-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 3rem;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100%;
+  max-width: 500px;
+  
+  min-width: 400px;
   text-align: center;
+  position: relative;
+  z-index: 1;
+  margin: auto;
+  min-height: auto;
 }
 
-.App-logo {
+/* Logo section */
+.logo-section {
+  margin-bottom: 2.5rem;
+}
+
+.logo-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+}
+
+.train-container {
+  position: relative;
+  display: inline-block;
+}
+
+.train-logo {
   height: 6em;
+  animation: gentle-bounce 3s ease-in-out infinite;
+  filter: drop-shadow(0 10px 20px rgba(79, 70, 229, 0.3));
+  transition: all 300ms;
   will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+.train-logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+  transform: scale(1.1) translateY(-5px);
+}
+
+.logo-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.2), transparent);
+  border-radius: 50%;
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+/* Title styling */
+.main-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.title-rail, .title-road {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.title-rail {
+  display: inline-block;
+  animation: slide-in-left 0.8s ease-out;
+}
+
+.title-road {
+  display: inline-block;
+  animation: slide-in-right 0.8s ease-out 0.2s both;
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-50px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(50px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0.5rem 0 0 0;
+  font-weight: 400;
+  animation: fade-in-up 0.8s ease-out 0.4s both;
+}
+
+@keyframes fade-in-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Login container - keeping your original class name */
+.loginContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border: none;
+  border-radius: 16px;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.welcome-header {
+  margin-bottom: 1rem;
+}
+
+.welcome-header h3 {
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.header-line {
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #4f46e5, #7c3aed);
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
+/* Input styling - keeping your original class name */
+.input-group {
+  position: relative;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.inputField {
+  font-size: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f2937;
+  width: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: #4f46e5;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  transform: translateY(-1px);
+}
+
+.inputField::placeholder {
+  color: #9ca3af;
+}
+
+.input-focus-border {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #4f46e5, #7c3aed);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.inputField:focus + .input-focus-border {
+  width: 100%;
+}
+
+/* Button styling */
+.login-button {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 0.5rem;
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+}
+
+.login-button:active {
+  transform: translateY(0);
+}
+
+.login-button.loading {
+  pointer-events: none;
+}
+
+.button-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.login-button:hover .button-shine {
+  left: 100%;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.login-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.login-footer p {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Keep your existing animations */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -40,19 +404,21 @@
   color: #888;
 }
 
-.loginContainer {
-  display: flex;
-  flex-flow: column;
-  gap: 5px;
-  border: 2px solid #06253f;
-  border-radius: 10px;
-  padding: 10px;
-}
+/* Responsive design */
+@media (max-width: 480px) {
+  .main-content {
+    margin: 1rem;
+    padding: 2rem 1.5rem;
+    min-width: 300px;
+  }
+  
+  .main-title {
+    font-size: 2.5rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+  
 
-.inputField {
-  font-size: 1.2em;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  background-color: #06253f;
 }
