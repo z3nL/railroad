@@ -1,7 +1,7 @@
 import asyncio
 from multi_tool_agent.agent import main
 from flask import Flask, request, jsonify
-from sqlcommands import verify_user, add_lesson, upload_directory, add_step, clear_generated_images
+from sqlcommands import verify_user, add_lesson, upload_directory, add_step, clear_generated_images, get_lessons, get_steps
 from flask_cors import CORS  # to allow frontend requests
 
 app = Flask(__name__)
@@ -42,11 +42,27 @@ def create_lesson():
     file_urls = upload_directory()
     clear_generated_images()
 
+    lesson['steps'] = []
+
     for i, file_url in enumerate(file_urls):
         step_description = steps_array[i] if i < len(steps_array) else "Step description missing"
         add_step(lesson_id, i + 1, step_description, file_url)
+        lesson['steps'].append({
+            "step_description": step_description,
+            "image_path": file_url
+        })
 
-    return jsonify({"success": True, "message": "Lesson created successfully", "lesson_id": lesson_id})
+    return jsonify({"success": True, "message": "Lesson created successfully", "lesson": lesson})
+
+@app.route('/getLessons', methods=['GET'])
+def getLessons():
+    lessons = get_lessons()
+    for lesson in lessons:
+        lesson_id = lesson['lesson_id']
+        steps = get_steps(lesson_id)
+        lesson['steps'] = steps
+
+    return jsonify({"lessons": lessons})
 
 if __name__ == '__main__':
     app.run(debug=True)

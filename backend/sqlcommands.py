@@ -79,7 +79,7 @@ def get_lessons(user_id: Optional[str] = None) -> List[Dict[str, Any]]:
 def get_steps(lesson_id: int) -> List[Dict[str, Any]]:
     res = (
         supabase.table("steps")
-        .select("lessons_id,step_number,step_image,step_description")
+        .select("lessons_id,step_number,image_path,step_description")
         .eq("lessons_id", lesson_id)
         .order("step_number", desc=False)
         .execute()
@@ -130,7 +130,7 @@ def add_steps(
             "lessons_id": lesson_id,
             "step_number": int(s["step_number"]),
             "step_description": s["step_description"],
-            "step_image": s.get("step_image"),
+            "image_path": s.get("image_path"),
         })
 
     res = (
@@ -195,7 +195,7 @@ def upload_directory():
             
             # Get public URL
             public_url = supabase.storage.from_(BUCKET_NAME).get_public_url(unique_name)
-            uploaded_files.append({"file": filename, "url": public_url})
+            uploaded_files.append(public_url)
             print(f"✅ Uploaded {filename} → {public_url}")
 
         except Exception as e:
