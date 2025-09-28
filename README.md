@@ -1,7 +1,5 @@
-TODO Write ReadMe
-- do not push .venv/ to repo pls
-- do not push node_modules/ to repo pls
-- do not push .env to repo pls
+# RaiLROAD - To get your students' learning back on track
+### by Zen Lambertus, Sebastian Serrano, Blake Coppens, & Miguel Suarez
 
-
-- this is awesome - blake
+### Competition Entry @ ShellHacks 2025
+https://devpost.com/software/1070226
