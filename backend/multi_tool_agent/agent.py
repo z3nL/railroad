@@ -2,9 +2,8 @@ import asyncio
 from google.adk.agents import Agent, SequentialAgent, ParallelAgent, LlmAgent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from google.genai.types import Content, Part  # user message container
+from google.genai.types import Content, Part
 import json
-# Your tools (plain Python functions are auto-wrapped as FunctionTools by ADK)
 from .generatesteps import generate_steps
 from .generatesimages import generate_images
 

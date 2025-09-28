@@ -2,9 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import arrowRight from './assets/arrow-right.svg';
 import handleCreateLessonSubmissionButton from './utils/handleCreateLessonSubmissionButton';
-import './TeacherDashboard.css'; // Use the new combined CSS file
+import './TeacherDashboard.css';
 
-// Cloud SVG Component from your App.js for the background
 const CloudIcon = ({ delay = "0s", size = "normal" }) => (
     <div
     className={`floating-cloud ${size === "small" ? "floating-cloud-small" : ""}`}
@@ -21,7 +20,6 @@ const TeacherDashboard = () => {
     const navigate = useNavigate();
     const [isCreatingLesson, setIsCreatingLesson] = useState(false);
     const [isWaitingOnLessonCreation, setIsWaitingOnLessonCreation] = useState(false);
-    // ... (All your existing state and handler functions remain unchanged)
     const [lessons, setLessons] = useState(null);
     
     const [selectedLesson, setSelectedLesson] = useState(null);
@@ -50,7 +48,6 @@ const TeacherDashboard = () => {
 
     useEffect(() => {
         if (lessons !== null) return;
-        // Fetch lessons from the backend API
         fetch('http://localhost:5000/getLessons') // Adjust the URL as needed
             .then(response => response.json())
             .then(data => setLessons(data.lessons))
@@ -60,7 +57,6 @@ const TeacherDashboard = () => {
     let content;
 
     if (selectedLesson) {
-        // ... Lesson Detail View (no changes needed here)
         const currentStep = selectedLesson.steps[currentStepIndex];
         const totalSteps = selectedLesson.steps.length;
         content = (
@@ -81,7 +77,6 @@ const TeacherDashboard = () => {
             </div>
         );
     } else {
-        // ... Lesson List View (no changes needed here)
         content = (
             <>
                 <div className="welcome-header">

@@ -20,6 +20,7 @@ const handleCreateLessonSubmissionButton = (e, setLessons, setIsCreatingLesson, 
                 alert("Lesson created successfully!");
                 console.log(data.lesson);
                 setLessons(prevLessons => [...prevLessons, data.lesson]);
+                setIsWaitingOnLessonCreation(false);
                 setIsCreatingLesson(false);
             } else {
                 alert(`Failed to create lesson: ${data.message}`);
@@ -28,6 +29,7 @@ const handleCreateLessonSubmissionButton = (e, setLessons, setIsCreatingLesson, 
         .catch((err) => {
             console.error("Error during lesson creation:", err);
             alert("An error occurred during lesson creation. Please try again.");
+            setIsWaitingOnLessonCreation(false);
             setIsCreatingLesson(false);
         });
 }

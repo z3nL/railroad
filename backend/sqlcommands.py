@@ -1,5 +1,4 @@
-#  assume plaintext passwords (test-only) and no RLS.
-# If you enable RLS later, use a service role key here (server-only).
+#  assume plaintext passwords (test-only) and no RLS
 
 import os
 import uuid
@@ -8,8 +7,7 @@ from typing import Optional, TypedDict, Tuple, Dict, Any, List
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# ---------- Load .env ----------
-load_dotenv(dotenv_path=".env")  # loads variables from .env into os.environ
+load_dotenv(dotenv_path=".env") 
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE = os.getenv("SUPABASE_SERVICE_ROLE")
@@ -56,7 +54,7 @@ def create_account(email: str, password: str, name: str, role: int) -> Tuple[Opt
     )
     if not result.data:
         return None, "Failed to create user"
-    # Fetch the newly created user by email
+    
     user = (
         supabase.table("users")
         .select("id,email,name,role,created_at")
@@ -73,7 +71,6 @@ def get_lessons(user_id: Optional[str] = None) -> List[Dict[str, Any]]:
     q = supabase.table("lessons").select(
         "lesson_id,created_at,lesson_name,lesson_descriptions,lesson_level"
     )
-    # if user_id: q = q.eq("owner_id", user_id)
     return q.order("created_at", desc=True).execute().data or []
 
 def get_steps(lesson_id: int) -> List[Dict[str, Any]]:
@@ -102,7 +99,6 @@ def add_lesson(
     )
     if not insert_lesson.data:
         return None, "Failed to create lesson"
-    # Fetch the newly created lesson by its id
     lesson_id = insert_lesson.data[0]["lesson_id"]
     lesson = (
         supabase.table("lessons")
@@ -171,7 +167,7 @@ def upload_directory():
     uploaded_files = []
 
     if not os.path.exists(GENERATED_DIR):
-        print(f"⚠️ Directory not found: {GENERATED_DIR}")
+        print(f"Directory not found: {GENERATED_DIR}")
         return uploaded_files
 
     for filename in os.listdir(GENERATED_DIR):
@@ -196,21 +192,17 @@ def upload_directory():
             # Get public URL
             public_url = supabase.storage.from_(BUCKET_NAME).get_public_url(unique_name)
             uploaded_files.append(public_url)
-            print(f"✅ Uploaded {filename} → {public_url}")
+            print(f"Uploaded {filename} → {public_url}")
 
         except Exception as e:
-            print(f"❌ Failed to upload {filename}: {e}")
+            print(f"Failed to upload {filename}: {e}")
 
     return uploaded_files
 
 
 def clear_generated_images():
-    """
-    Recursively deletes all files and folders inside generated_images.
-    Keeps the generated_images folder itself.
-    """
     if not os.path.exists(GENERATED_DIR):
-        print(f"⚠️ Directory not found: {GENERATED_DIR}")
+        print(f"Directory not found: {GENERATED_DIR}")
         return
 
     for item in os.listdir(GENERATED_DIR):
@@ -221,6 +213,6 @@ def clear_generated_images():
             elif os.path.isdir(path):
                 shutil.rmtree(path)  # remove folder and its contents
         except Exception as e:
-            print(f"❌ Failed to delete {path}: {e}")
+            print(f"Failed to delete {path}: {e}")
 
-    print(f"✅ Cleared contents of {GENERATED_DIR}")
+    print(f"Cleared contents of {GENERATED_DIR}")

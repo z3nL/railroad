@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
-import train from './assets/train.png'; // Your existing train image
-import handleLogin from './utils/handleLogin'; // Your existing login function
+import train from './assets/train.png';
+import handleLogin from './utils/handleLogin';
 
-// Custom Train Component using your actual image
 const TrainLogo = () => (
   <div className="train-container">
     <img src={train} className="train-logo" alt="train" />
@@ -32,10 +31,8 @@ function App() {
   const handleSubmit = (e) => {
     setIsLoading(true);
     
-    // Use your existing handleLogin function
     handleLogin(e, navigate);
     
-    // Reset loading state after a delay (adjust as needed)
     setTimeout(() => setIsLoading(false), 2000);
   };
 

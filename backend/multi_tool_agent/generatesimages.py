@@ -1,13 +1,10 @@
-# generatesimages.py - FIXED
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import base64
-from typing import List, Optional
+from typing import List
 import time
-import hashlib
 
-# Load environment variables from .env
 load_dotenv()
 
 API_KEY = os.getenv("OPENAI_API_KEY")
@@ -18,8 +15,8 @@ client = OpenAI(api_key=API_KEY)
 
 
 def generate_images(
-    prompts: List[str], # Required: This is the only parameter the LLM agent will supply
-    n_images: int       # Required: The LLM agent MUST supply this value (e.g., 1)
+    prompts: List[str],
+    n_images: int
 ) -> List[str]:
     """
     Generate images using gpt-image-1, save locally, and return file paths.

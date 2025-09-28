@@ -30,7 +30,7 @@ def generate_steps(task: str, values: str, student: str) -> list[str]:
     )
 
     data = json.loads(resp.text)
-    return data["steps"]  # <- this is just the array of strings
+    return data["steps"]
 
 
 result = generate_steps("algebra", "basic algebraic operations", "high school student")  #Example usage
