@@ -5,8 +5,8 @@ from google.adk.sessions import InMemorySessionService
 from google.genai.types import Content, Part  # user message container
 import json
 # Your tools (plain Python functions are auto-wrapped as FunctionTools by ADK)
-from generatesteps import generate_steps
-from generatesimages import generate_images
+from .generatesteps import generate_steps
+from .generatesimages import generate_images
 
 steps_agent = Agent(
     name="teaching_guide_agent",
@@ -75,7 +75,7 @@ sequential_pipeline = SequentialAgent(
 
 root_agent = sequential_pipeline
 
-async def main():
+async def main(topic, description, level):
     app_name = "PipelineApp"
     user_id = "blake"
     session_service = InMemorySessionService()
@@ -90,9 +90,9 @@ async def main():
 
     # 2. Prepare Input
     payload = {
-        "task": "algebra",
-        "values": "basic algebraic operations",
-        "student": "high school student"
+        "task": topic,
+        "values": description,
+        "student": level
     }
     user_msg = Content(parts=[Part(text=str(payload))])
 
@@ -203,7 +203,9 @@ async def main():
             print(f"✅ SUCCESS: Generated {actual_images} images for {expected_images} steps")
         else:
             print(f"⚠️  MISMATCH: Expected {expected_images} images, got {actual_images}")
+    
+    return steps_array if saved_steps_str else []
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main("algebra", "basic algebraic operations", "high school student"))

@@ -33,13 +33,7 @@ def generate_steps(task: str, values: str, student: str) -> list[str]:
     return data["steps"]  # <- this is just the array of strings
 
 
-<<<<<<< HEAD
-if __name__ == "__main__":
-    steps = generate_steps("soccer", "how to play soccer", "high school soccer")
-    import json; print(json.dumps(steps))
-=======
 result = generate_steps("algebra", "basic algebraic operations", "high school student")  #Example usage
 print(len(result))
 for i in result:
     print(i)
->>>>>>> origin/parallel-testing

@@ -2,6 +2,8 @@
 # If you enable RLS later, use a service role key here (server-only).
 
 import os
+import uuid
+import shutil
 from typing import Optional, TypedDict, Tuple, Dict, Any, List
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -11,6 +13,9 @@ load_dotenv(dotenv_path=".env")  # loads variables from .env into os.environ
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE = os.getenv("SUPABASE_SERVICE_ROLE")
+BUCKET_NAME = "aiImages"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+GENERATED_DIR = os.path.join(BASE_DIR, "generated_images")
 
 if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE:
     raise RuntimeError("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE in .env")
@@ -108,6 +113,7 @@ def add_lesson(
     )
     if not lesson.data:
         return None, "Failed to fetch created lesson"
+    
     return lesson.data[0], None
 
 # ---------- Steps ----------
@@ -150,7 +156,8 @@ def add_step(
             "lessons_id": lesson_id,
             "step_number": int(step_number),
             "step_description": step_description,
-            "step_image": step_image,
+            "image_bucket": "aiImages",
+            "image_path": step_image,
         })
         .execute()
     )
@@ -159,3 +166,61 @@ def add_step(
         return None, error_message
     rows = res.data or []
     return (rows[0] if rows else None), None
+
+def upload_directory():
+    uploaded_files = []
+
+    if not os.path.exists(GENERATED_DIR):
+        print(f"⚠️ Directory not found: {GENERATED_DIR}")
+        return uploaded_files
+
+    for filename in os.listdir(GENERATED_DIR):
+        filepath = os.path.join(GENERATED_DIR, filename)
+
+        # Skip non-files
+        if not os.path.isfile(filepath):
+            continue
+
+        # Restrict to common image extensions
+        if not filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".webp")):
+            continue
+
+        # Generate unique filename to avoid collisions
+        ext = filename.split(".")[-1]
+        unique_name = f"{uuid.uuid4()}.{ext}"
+
+        try:
+            with open(filepath, "rb") as f:
+                supabase.storage.from_(BUCKET_NAME).upload(unique_name, f)
+            
+            # Get public URL
+            public_url = supabase.storage.from_(BUCKET_NAME).get_public_url(unique_name)
+            uploaded_files.append({"file": filename, "url": public_url})
+            print(f"✅ Uploaded {filename} → {public_url}")
+
+        except Exception as e:
+            print(f"❌ Failed to upload {filename}: {e}")
+
+    return uploaded_files
+
+
+def clear_generated_images():
+    """
+    Recursively deletes all files and folders inside generated_images.
+    Keeps the generated_images folder itself.
+    """
+    if not os.path.exists(GENERATED_DIR):
+        print(f"⚠️ Directory not found: {GENERATED_DIR}")
+        return
+
+    for item in os.listdir(GENERATED_DIR):
+        path = os.path.join(GENERATED_DIR, item)
+        try:
+            if os.path.isfile(path) or os.path.islink(path):
+                os.unlink(path)  # remove file or symlink
+            elif os.path.isdir(path):
+                shutil.rmtree(path)  # remove folder and its contents
+        except Exception as e:
+            print(f"❌ Failed to delete {path}: {e}")
+
+    print(f"✅ Cleared contents of {GENERATED_DIR}")
