@@ -1,0 +1,202 @@
+/* --- BASE AND BACKGROUND STYLES (FROM APP.CSS) --- */
+#root {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  width: 100vw;
+  min-height: 100vh;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  background-color: #667eea; /* Fallback background */
+}
+
+.app-container {
+  min-height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Background Animated Elements */
+.background-elements {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-cloud {
+  position: absolute;
+  animation: float 8s ease-in-out infinite;
+}
+.floating-cloud:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+.floating-cloud:nth-child(2) { top: 20%; right: 15%; animation-delay: 2s;}
+.floating-cloud:nth-child(3) { bottom: 20%; left: 5%; animation-delay: 4s;}
+.floating-cloud-small { transform: scale(0.6); }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+.gradient-orb {
+  position: absolute; border-radius: 50%; filter: blur(50px); opacity: 0.6; animation: pulse 5s ease-in-out infinite alternate;
+}
+.orb-1 { width: 250px; height: 250px; background: radial-gradient(circle, #ff6b6b, transparent); top: 5%; right: 10%; animation-delay: 0s; }
+.orb-2 { width: 200px; height: 200px; background: radial-gradient(circle, #4ecdc4, transparent); bottom: 10%; right: 20%; animation-delay: 2s; }
+.orb-3 { width: 150px; height: 150px; background: radial-gradient(circle, #ffe66d, transparent); top: 50%; left: 5%; animation-delay: 1s; }
+
+@keyframes pulse {
+  from { opacity: 0.4; transform: scale(0.9); }
+  to { opacity: 0.8; transform: scale(1.1); }
+}
+
+/* --- MAIN CONTENT CONTAINER (FROM APP.CSS) --- */
+.main-content {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100%;
+  max-width: 800px; /* Increased max-width for dashboard content */
+  text-align: left;
+  position: relative;
+  z-index: 1;
+  margin: auto;
+  min-height: auto;
+}
+
+/* --- DASHBOARD SPECIFIC STYLES (MERGED AND ADAPTED) --- */
+
+/* Headers */
+.dashboardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.dashboardHeader h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.welcome-header { margin-bottom: 1.5rem; text-align: center; }
+.welcome-header h3 { color: #1f2937; font-size: 1.75rem; font-weight: 600; margin: 0 0 0.5rem 0; }
+.header-line { width: 60px; height: 3px; background: linear-gradient(90deg, #4f46e5, #7c3aed); margin: 0 auto; border-radius: 2px; }
+
+/* Buttons (Unified Style) */
+.login-button, .logoutButton, .backButton, .cancelButton {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white; border: none; padding: 0.9rem 1.5rem; font-size: 1rem;
+  font-weight: 600; border-radius: 12px; cursor: pointer; position: relative;
+  overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.login-button:hover, .logoutButton:hover, .backButton:hover {
+  transform: translateY(-3px); box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+}
+.logoutButton { background: linear-gradient(135deg, #e63946, #c91827); }
+.logoutButton:hover { box-shadow: 0 10px 25px rgba(230, 57, 70, 0.3); }
+.backButton { background: linear-gradient(135deg, #868e96, #495057); margin-top: 1.5rem; display: block; margin-left: auto; margin-right: auto;}
+.backButton:hover { box-shadow: 0 10px 25px rgba(108, 117, 125, 0.3); }
+.cancelButton { background: none; color: #495057; border: 2px solid #e5e7eb; }
+.cancelButton:hover { background: #f1f3f5; transform: translateY(-3px); }
+
+.button-shine {
+  position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s;
+}
+.login-button:hover .button-shine, .logoutButton:hover .button-shine, .backButton:hover .button-shine { left: 100%; }
+.createButton-container { text-align: center; margin: 2rem 0; }
+
+/* Lists */
+.lessonList { margin-top: 1rem; border: 2px solid #e5e7eb; border-radius: 16px; background: white; overflow: hidden; }
+.lessonItem { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e5e7eb; }
+.lessonItem:last-child { border-bottom: none; }
+.lessonItem-main { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; cursor: pointer; transition: background-color 0.2s; }
+.lessonItem-main p { margin: 0; font-size: 1.1rem; font-weight: 500; color: #333; }
+.lessonItem-main:hover { background-color: #f8f9fa; }
+.delete-button { background: none; border: none; font-size: 20px; cursor: pointer; padding: 0.5rem 1.25rem; color: #adb5bd; transition: all 0.2s; border-left: 2px solid #e5e7eb; }
+.delete-button:hover { color: #e63946; background-color: #fff5f5; }
+.arrowIcon { width: 18px; height: 18px; }
+
+/* Create Lesson Form */
+.createLessonForm { display: flex; flex-direction: column; gap: 1.25rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(0,0,0,0.1); }
+.input-wrapper { position: relative; }
+.inputField {
+  font-size: 1rem; padding: 1rem 1.25rem; border-radius: 12px;
+  border: 2px solid #e5e7eb; background: rgba(255, 255, 255, 0.9);
+  color: #1f2937; width: 100%; transition: all 0.3s; box-sizing: border-box;
+}
+.inputField:focus {
+  outline: none; border-color: #4f46e5; background: white;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); transform: translateY(-1px);
+}
+.inputField::placeholder { color: #9ca3af; }
+textarea.inputField { min-height: 120px; resize: vertical; }
+.form-button-group { display: flex; justify-content: center; gap: 1rem; margin-top: 1rem; }
+
+/* Lesson Detail & Step Navigation */
+.lessonDetailContainer { padding: 1rem 0; }
+.lessonDetailContainer h2 { text-align: center; font-size: 1.75rem; margin-bottom: 0.5rem; color: #1f2937; }
+.step-counter { font-size: 1.1rem; text-align: center; color: #6b7280; margin-bottom: 1.5rem; }
+.step-navigation { position: relative; display: flex; align-items: center; gap: 1rem; }
+.lessonStepItem {
+    flex-grow: 1; display: flex; flex-direction: column; align-items: center;
+    min-height: 450px; padding: 1rem; border: 2px solid #e5e7eb; border-radius: 16px;
+    background-color: #fff; text-align: center; justify-content: center;
+}
+.stepImage { max-width: 100%; max-height: 320px; object-fit: contain; border-radius: 12px; margin-bottom: 1.5rem; }
+.stepText { margin: 0; font-size: 1.2rem; line-height: 1.6; color: #212529; }
+.nav-arrow {
+    background-color: #fff; border: 2px solid #e5e7eb;
+    border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    color: #4f46e5;
+}
+.nav-arrow:hover:not(:disabled) { background-color: #4f46e5; color: white; border-color: #4f46e5; transform: scale(1.1); }
+.nav-arrow:disabled { cursor: not-allowed; opacity: 0.4; }
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .main-content { padding: 2rem 1.5rem; }
+  .dashboardHeader h1 { font-size: 1.75rem; }
+}
+
+@media (max-width: 480px) {
+  .app-container { padding: 1rem; }
+  .main-content { padding: 1.5rem 1rem; }
+  .dashboardHeader { flex-direction: column; gap: 1rem; }
+  .step-navigation { flex-direction: column; }
+  .nav-arrow {
+    position: absolute;
+    bottom: -60px; /* Position below the main box */
+  }
+  .nav-arrow.prev { left: 20%; }
+  .nav-arrow.next { right: 20%; }
+  .lessonDetailContainer { padding-bottom: 70px; }
+}
