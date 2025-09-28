@@ -47,12 +47,21 @@ def create_account(email: str, password: str, name: str, role: int) -> Tuple[Opt
     result = (
         supabase.table("users")
         .insert({"email": email, "password": password, "name": name, "role": role})
-        .select("id,email,name,role,created_at")
         .execute()
     )
     if not result.data:
         return None, "Failed to create user"
-    return result.data[0], None
+    # Fetch the newly created user by email
+    user = (
+        supabase.table("users")
+        .select("id,email,name,role,created_at")
+        .eq("email", email)
+        .limit(1)
+        .execute()
+    )
+    if not user.data:
+        return None, "Failed to fetch created user"
+    return user.data[0], None
 
 # ---------- Lessons ----------
 def get_lessons(user_id: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -84,12 +93,22 @@ def add_lesson(
             "lesson_descriptions": lesson_description,
             "lesson_level": lesson_level,
         })
-        .select("lesson_id,created_at,lesson_name,lesson_descriptions,lesson_level")
         .execute()
     )
     if not insert_lesson.data:
         return None, "Failed to create lesson"
-    return insert_lesson.data[0], None
+    # Fetch the newly created lesson by its id
+    lesson_id = insert_lesson.data[0]["lesson_id"]
+    lesson = (
+        supabase.table("lessons")
+        .select("lesson_id,created_at,lesson_name,lesson_descriptions,lesson_level")
+        .eq("lesson_id", lesson_id)
+        .limit(1)
+        .execute()
+    )
+    if not lesson.data:
+        return None, "Failed to fetch created lesson"
+    return lesson.data[0], None
 
 # ---------- Steps ----------
 def add_steps(
@@ -111,11 +130,11 @@ def add_steps(
     res = (
         supabase.table("steps")
         .insert(payload)
-        .select("lessons_id,step_number,step_image,step_description")
         .execute()
     )
-    if getattr(res, "error", None):
-        return [], res.error.message
+    if getattr(res, "error", None) or not res.data:
+        error_message = getattr(res, "message", "Failed to insert steps")
+        return [], error_message
 
     return sorted(res.data, key=lambda x: x["step_number"]), None
 
@@ -133,10 +152,10 @@ def add_step(
             "step_description": step_description,
             "step_image": step_image,
         })
-        .select("lessons_id,step_number,step_image,step_description")
         .execute()
     )
+    if not res.data:
+        error_message = getattr(res, "message", "Failed to insert step")
+        return None, error_message
     rows = res.data or []
-    if getattr(res, "error", None):
-        return None, res.error.message
     return (rows[0] if rows else None), None
