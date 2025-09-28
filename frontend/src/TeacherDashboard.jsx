@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import arrowRight from './assets/arrow-right.svg';
+import handleCreateLessonSubmissionButton from './utils/handleCreateLessonSubmissionButton';
 import './TeacherDashboard.css';
 import './App.css';
 
@@ -34,40 +35,6 @@ const TeacherDashboard = () => {
         }
         setIsCreatingLesson(!isCreatingLesson);
     };
-
-    const handleCreateLessonSubmissionButton = (e) => {
-        e.preventDefault();
-        const title = e.target[0].value;
-        const topic = e.target[1].value;
-        const level = e.target[2].value;
-        const description = e.target[3].value;
-
-        fetch(`http://localhost:5000/createLesson`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ title, topic, level, description }),
-        });
-        /*
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.success) {
-                    alert("Lesson created successfully!");
-                } else {
-                    alert(`Failed to create lesson: ${data.message}`);
-                }
-            })
-            .catch((err) => {
-                console.error("Error during lesson creation:", err);
-                alert("An error occurred during lesson creation. Please try again.");
-            });
-        */
-        
-        handleCreateLessonModalButton();
-        setPendingLessonName(title);
-        setIsWaitingOnLessonCreation(true);
-    }
 
     const handleLessonClick = (lessonId) => {
         alert(`GK: Clicked ${lessonId}, not implemented yet`);
@@ -117,7 +84,9 @@ const TeacherDashboard = () => {
             </button>
 
             {isCreatingLesson && !isWaitingOnLessonCreation && (
-                <form className="createLessonForm" onSubmit={handleCreateLessonSubmissionButton}>
+                <form className="createLessonForm" onSubmit={(e) => {
+                    handleCreateLessonSubmissionButton(e, handleCreateLessonModalButton, setPendingLessonName, setIsWaitingOnLessonCreation)
+                }}>
                     <input className='inputField' type="text" placeholder="Lesson Title" required/>
                     <input className='inputField' type="text" placeholder="Lesson Topic" required/>
                     <input className='inputField' type="text" placeholder="Student Learning Level" required/>
